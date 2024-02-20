@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  python:
+    image: python:3.12.0
+    volumes:
+      - ./logs/dummy_logs.json:/usr/share/filebeat/dummy_logs.json  # Montar el archivo JSON generado por el script Python
+      - ./generate_logs.py:/generate_logs.py  # Montar el script Python dentro del contenedor
+    command: python generate_logs.py 
+
+  filebeat:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro  # Montar la configuración de Filebeat
+      - ./logs/dummy_logs.json:/usr/share/filebeat/dummy_logs.json:ro  # Montar el archivo JSON a ser enviado por Filebeat
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro  # Montar los logs del contenedor para Filebeat
+    environment:
+      - "ELASTICSEARCH_HOST=http://elasticsearch:9200"  # Especificar la URL de Elasticsearch
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    ports:
+      - "9200:9200"  # Mapeo del puerto de Elasticsearch

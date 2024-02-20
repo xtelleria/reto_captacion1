@@ -1,0 +1,9 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /usr/share/filebeat/dummy_logs.json
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "index1-%{+yyyy.MM.dd}"
